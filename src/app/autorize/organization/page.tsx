@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_ADRESS } from "@/lib/api/config";
 
 interface OrganizationLoginData {
   name: string;
@@ -10,7 +9,10 @@ interface OrganizationLoginData {
   password: string;
 }
 
-interface LoginErrors extends Partial<OrganizationLoginData> {
+interface LoginErrors {
+  name?: string;
+  email?: string;
+  password?: string;
   submit?: string;
 }
 
@@ -74,6 +76,10 @@ export const OrganizationLoginForm = () => {
           }),
         });
 
+        if (response.status === 401) {
+          throw new Error('Неверные учетные данные');
+        }
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Ошибка при авторизации');
@@ -82,14 +88,17 @@ export const OrganizationLoginForm = () => {
         const data = await response.json();
         console.log('Успешная авторизация:', data);
         
-        // Сохраняем токен в localStorage
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('userRole', 'organization');
         
         router.push("/");
       } catch (error) {
         console.error('Ошибка при авторизации:', error);
-        setErrors({ submit: error instanceof Error ? error.message : 'Произошла ошибка при авторизации' });
+        setErrors({ 
+          submit: error instanceof Error 
+            ? error.message 
+            : 'Произошла ошибка при авторизации. Проверьте правильность введенных данных.' 
+        });
       } finally {
         setIsLoading(false);
       }

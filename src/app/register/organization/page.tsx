@@ -17,6 +17,21 @@ interface OrganizationLoginData {
   category: number;
 }
 
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  hashed_password?: string;
+  phone?: string;
+  address?: string;
+  inn?: string;
+  description?: string;
+  submit?: string;
+  category?: string;
+}
+
+const categories = ["Питание", "Здоровье", "Одежда"];
+
 export const OrganizationLoginForm = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<OrganizationLoginData>({
@@ -31,7 +46,7 @@ export const OrganizationLoginForm = () => {
     category: 0,
   });
 
-  const [errors, setErrors] = useState<Partial<OrganizationLoginData>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email: string) => {
@@ -49,7 +64,7 @@ export const OrganizationLoginForm = () => {
     return re.test(inn.replace(/\s+/g, ""));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     // Для ИНН разрешаем только цифры
     if (name === "inn") {
@@ -65,7 +80,7 @@ export const OrganizationLoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Partial<OrganizationLoginData> = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = "Название организации обязательно";
@@ -105,6 +120,10 @@ export const OrganizationLoginForm = () => {
       newErrors.inn = "ИНН обязателен";
     } else if (!validateInn(formData.inn)) {
       newErrors.inn = "ИНН должен содержать 10 или 12 цифр";
+    }
+
+    if (!formData.category) {
+      newErrors.category = "Категория обязательна";
     }
 
     setErrors(newErrors);
@@ -284,6 +303,31 @@ export const OrganizationLoginForm = () => {
             />
             {errors.description && (
               <p className="text-sm text-red-500 mt-2 ml-1">{errors.description}</p>
+            )}
+          </div>
+
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Категория *
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
+                errors.category ? "border-red-500" : "border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+              disabled={isLoading}
+            >
+              <option value="">Выберите категорию</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.category}</p>
             )}
           </div>
 
