@@ -35,6 +35,40 @@ function VolunteerCabinet() {
         ]
       }
     ],
+    bonusHistory: [
+      {
+        id: 1,
+        serviceName: "Скидка 10% в кафе",
+        date: "2024-03-15",
+        status: "Использовано",
+        pointsSpent: 100
+      },
+      {
+        id: 2,
+        serviceName: "Бесплатный вход в музей",
+        date: "2024-03-10",
+        status: "Использовано",
+        pointsSpent: 150
+      },
+      {
+        id: 3,
+        serviceName: "Скидка 15% на курсы",
+        date: "2024-03-05",
+        status: "Ожидает подтверждения",
+        pointsSpent: 200
+      }
+    ]
+  };
+
+  const router = useRouter();
+
+  const handleGenerateQR = async () => {
+    try {
+      const qrData = 'https://github.com/dobrodon/front-dobrodon/';
+      router.push(`/qr-code?data=${encodeURIComponent(qrData)}`);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
   };
 
   // Получаем доступные услуги для текущего уровня
@@ -43,28 +77,74 @@ function VolunteerCabinet() {
     .flatMap(bonus => bonus.services);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Личный кабинет волонтера</h1>
-      
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="flex items-center">
-          <TrophyIcon className="h-8 w-8 text-yellow-500 mr-2" />
-          <span className="text-lg text-gray-600">Уровень бонусов: {volunteerData.level}</span>
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Личный кабинет волонтера</h1>
+          <button 
+            onClick={handleGenerateQR}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+            </svg>
+            Создать QR-код
+          </button>
+        </div>
+        
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="flex items-center">
+            <TrophyIcon className="h-8 w-8 text-yellow-500 mr-2" />
+            <span className="text-lg text-gray-600">Уровень бонусов: {volunteerData.level}</span>
+          </div>
+        </div>
+
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Доступные услуги</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {availableServices.map((service) => (
+            <div key={service.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="font-medium text-gray-800 mb-2">{service.name}</h3>
+              <p className="text-sm text-gray-600 mb-3">{service.description}</p>
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                Забронировать
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Доступные услуги</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {availableServices.map((service) => (
-          <div key={service.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="font-medium text-gray-800 mb-2">{service.name}</h3>
-            <p className="text-sm text-gray-600 mb-3">{service.description}</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-              Забронировать
-            </button>
-          </div>
+<div className="bg-white rounded-lg shadow-sm p-6">
+  <h2 className="text-xl font-semibold text-gray-800 mb-4">История использования бонусов</h2>
+  <div className="overflow-x-auto">
+    <table className="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden text-left">
+      <thead className="bg-blue-50">
+        <tr>
+          <th className="w-1/3 px-6 py-3 text-xs font-semibold text-blue-700 uppercase tracking-wider">Услуга</th>
+          <th className="w-1/3 px-6 py-3 text-xs font-semibold text-blue-700 uppercase tracking-wider">Дата</th>
+          <th className="w-1/3 px-6 py-3 text-xs font-semibold text-blue-700 uppercase tracking-wider">Статус</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {volunteerData.bonusHistory.map((bonus) => (
+          <tr key={bonus.id} className="hover:bg-gray-50 transition duration-150">
+            <td className="w-1/3 px-6 py-4 whitespace-nowrap text-sm text-gray-900">{bonus.serviceName}</td>
+            <td className="w-1/3 px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bonus.date}</td>
+            <td className="w-1/3 px-6 py-4 whitespace-nowrap">
+              <span className={`px-3 py-1 inline-flex text-sm leading-5 font-medium rounded-full ${
+                bonus.status === 'Использовано'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {bonus.status}
+              </span>
+            </td>
+          </tr>
         ))}
-      </div>
+      </tbody>
+    </table>
+  </div>
+</div>
+      
     </div>
   );
 }
