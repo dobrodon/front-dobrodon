@@ -78,6 +78,18 @@ export default function PartnersPage() {
     setPartners(filtered);
   };
 
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const role = localStorage.getItem('userRole');
+      setUserRole(role);
+    }
+  }, []);
+
+  const isAuthorized = userRole === 'volunteer' || userRole === 'admin' || userRole === 'organization';
+
   return (
     <div>
       <nav className="sticky top-0 bg-white shadow-sm z-50">
@@ -91,8 +103,15 @@ export default function PartnersPage() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
-              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
-              <Link href="/autorize" className="text-gray-700 hover:text-blue-600">Вход</Link>
+              {!isAuthorized && (
+                <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              )}
+              <Link 
+                href={isAuthorized ? "/cabinet" : "/autorize"} 
+                className="text-gray-700 hover:text-blue-600"
+              >
+                {isAuthorized ? "Личный кабинет" : "Вход"}
+              </Link>
             </div>
           </div>
         </div>
