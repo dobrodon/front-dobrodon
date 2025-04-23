@@ -1,8 +1,21 @@
+"use client"
 import Image from "next/image";
 import Link from "next/link";
 import { SparklesIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const role = localStorage.getItem('userRole');
+      setUserRole(role);
+    }
+  }, []);
+
+  const isAuthorized = userRole === 'volunteer' || userRole === 'admin' || userRole === 'organization';
+
   return (
     <div className="min-h-screen bg-white">
       {/* Навигационная панель */}
@@ -17,8 +30,15 @@ export default function Home() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
-              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
-              <Link href="/autorize" className="text-gray-700 hover:text-blue-600">Вход</Link>
+              {!isAuthorized && (
+                <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              )}
+              <Link 
+                href={isAuthorized ? "/cabinet" : "/autorize"} 
+                className="text-gray-700 hover:text-blue-600"
+              >
+                {isAuthorized ? "Личный кабинет" : "Вход"}
+              </Link>
             </div>
           </div>
         </div>
@@ -39,14 +59,12 @@ export default function Home() {
                 Зарегистрировать организацию
               </Link>
               <Link href="/partners" className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors">
-                Найти бонусы
+                Использовать бонусы
               </Link>
             </div>
           </div>
         </div>
       </section>
-
-
 
       {/* Секция партнеров */}
       <section className="py-20 bg-gray-50">

@@ -14,7 +14,7 @@ interface OrganizationLoginData {
   inn: string;
   description: string;
   submit?: string;
-  category: number;
+  category: string;
 }
 
 const categories = ["Питание", "Здоровье", "Одежда"];
@@ -30,7 +30,7 @@ export const OrganizationLoginForm = () => {
     address: "",
     inn: "",
     description: "",
-    category: 0,
+    category: "",
   });
 
   const [errors, setErrors] = useState<Partial<OrganizationLoginData>>({});
