@@ -5,63 +5,63 @@ import Image from "next/image";
 import Link from "next/link";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 
-// Mock data for partner organizations
-const mockPartners = [
-  {
-    id: 1,
-    name: "Кафе 'Вкусно и точка'",
-    inn: "1234567890",
-    email: "cafe@example.com",
-    phone: "+7 (999) 123-45-67",
-    password: "hashed_password",
-    address: "ул. Пушкина, 10",
-    description: "Сеть кафе быстрого питания с вкусной и полезной едой",
-    category: "Питание",
-    logo: "C:/front-dobrodon/front-dobrodon/src/app/favicon.ico"
-  },
-  {
-    id: 2,
-    name: "Спортивный клуб 'Фитнес'",
-    inn: "0987654321",
-    email: "fitness@example.com",
-    phone: "+7 (999) 765-43-21",
-    password: "hashed_password",
-    address: "пр. Ленина, 25",
-    description: "Современный фитнес-клуб с профессиональными тренерами",
-    category: "Здоровье",
-    logo: "/images/fitness-logo.png"
-  },
-  {
-    id: 3,
-    name: "Магазин 'Модный стиль'",
-    inn: "1122334455",
-    email: "fashion@example.com",
-    phone: "+7 (999) 888-77-66",
-    password: "hashed_password",
-    address: "ул. Гагарина, 15",
-    description: "Магазин модной одежды и аксессуаров",
-    category: "Одежда",
-    logo: "/images/fashion-logo.png"
-  }
-];
+interface Organization {
+  id: number;
+  name: string;
+  inn: string;
+  email: string;
+  phone: string;
+  address: string;
+  description: string;
+  category: string;
+}
 
 const categories = ["Все", "Питание", "Здоровье", "Одежда"];
 
 export default function PartnersPage() {
-  const [partners, setPartners] = useState(mockPartners);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Все");
+
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch("http://25.39.40.75:8013/organizations", {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка при загрузке организаций');
+        }
+
+        const data = await response.json();
+        setOrganizations(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Произошла ошибка при загрузке данных');
+        console.error('Ошибка:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
 
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce((term: string) => {
-      const filtered = mockPartners.filter(partner =>
-        partner.name.toLowerCase().includes(term.toLowerCase()) &&
-        (selectedCategory === "Все" || partner.category === selectedCategory)
+      const filtered = organizations.filter(org =>
+        org.name.toLowerCase().includes(term.toLowerCase()) &&
+        (selectedCategory === "Все" || org.category === selectedCategory)
       );
-      setPartners(filtered);
+      setOrganizations(filtered);
     }, 300),
-    [selectedCategory]
+    [selectedCategory, organizations]
   );
 
   useEffect(() => {
@@ -71,12 +71,28 @@ export default function PartnersPage() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    const filtered = mockPartners.filter(partner =>
-      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (category === "Все" || partner.category === category)
+    const filtered = organizations.filter(org =>
+      org.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (category === "Все" || org.category === category)
     );
-    setPartners(filtered);
+    setOrganizations(filtered);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-xl text-gray-600">Загрузка...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-xl text-red-600">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -104,6 +120,7 @@ export default function PartnersPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
           Организации-партнёры
         </h1>
+
 
         {/* Search and Filter Section */}
         <div className="mb-8 space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
@@ -135,30 +152,23 @@ export default function PartnersPage() {
 
         {/* Partners Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {partners.map((partner) => (
+          {organizations.map((org) => (
             <div
-              key={partner.id}
+              key={org.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
             >
               <div className="p-6 flex-grow flex flex-col">
                 <div className="flex items-center mb-4 h-20">
-                  {partner.logo && (
-                    <img
-                      src={partner.logo}
-                      alt={partner.name}
-                      className="w-16 h-16 object-cover rounded-full mr-4"
-                    />
-                  )}
                   <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                    {partner.name}
+                    {org.name}
                   </h2>
                 </div>
                 <div className="mb-4 h-24">
-                  <p className="text-gray-600 line-clamp-3">{partner.description}</p>
+                  <p className="text-gray-600 line-clamp-3">{org.description}</p>
                 </div>
                 <div className="mb-4 h-8">
                   <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                    {partner.category}
+                    {org.category}
                   </span>
                 </div>
                 <div className="h-12">
@@ -182,7 +192,7 @@ export default function PartnersPage() {
                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                       />
                     </svg>
-                    <span className="line-clamp-2">{partner.address}</span>
+                    <span className="line-clamp-2">{org.address}</span>
                   </p>
                 </div>
               </div>
@@ -191,7 +201,7 @@ export default function PartnersPage() {
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300"
                   onClick={() => {
                     // Handle "Подробнее" click
-                    console.log(`View details for ${partner.name}`);
+                    console.log(`View details for ${org.name}`);
                   }}
                 >
                   Подробнее
@@ -205,4 +215,4 @@ export default function PartnersPage() {
     </div>
     
   );
-} 
+}
