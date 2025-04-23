@@ -1,7 +1,13 @@
-import { SparklesIcon, StarIcon, TrophyIcon } from "@heroicons/react/24/outline";
+"use client"
+import { SparklesIcon, StarIcon, TrophyIcon, BuildingOfficeIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
-export default function VolunteerCabinet() {
+// Тип для роли пользователя
+type UserRole = 'volunteer' | 'organization' | 'admin';
+
+// Компонент для волонтера
+function VolunteerCabinet() {
   // Пример данных - в реальном приложении они будут приходить из API
   const volunteerData = {
     level: 2,
@@ -36,8 +42,131 @@ export default function VolunteerCabinet() {
     .flatMap(bonus => bonus.services);
 
   return (
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Личный кабинет волонтера</h1>
+      
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="flex items-center">
+          <TrophyIcon className="h-8 w-8 text-yellow-500 mr-2" />
+          <span className="text-lg text-gray-600">Уровень бонусов: {volunteerData.level}</span>
+        </div>
+      </div>
+
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Доступные услуги</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {availableServices.map((service) => (
+          <div key={service.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="font-medium text-gray-800 mb-2">{service.name}</h3>
+            <p className="text-sm text-gray-600 mb-3">{service.description}</p>
+            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+              Забронировать
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Компонент для организации
+function OrganizationCabinet() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Личный кабинет организации</h1>
+      
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="flex items-center">
+          <BuildingOfficeIcon className="h-8 w-8 text-blue-500 mr-2" />
+          <span className="text-lg text-gray-600">Статус: Активна</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-800 mb-2">Мои мероприятия</h3>
+          <p className="text-sm text-gray-600 mb-3">Управление и создание мероприятий</p>
+          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            Управление
+          </button>
+        </div>
+        
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-800 mb-2">Статистика</h3>
+          <p className="text-sm text-gray-600 mb-3">Просмотр статистики и отчетов</p>
+          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            Открыть
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Компонент для администратора
+function AdminCabinet() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Панель администратора</h1>
+      
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="flex items-center">
+          <ShieldCheckIcon className="h-8 w-8 text-green-500 mr-2" />
+          <span className="text-lg text-gray-600">Уровень доступа: Администратор</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-800 mb-2">Управление пользователями</h3>
+          <p className="text-sm text-gray-600 mb-3">Управление аккаунтами и ролями</p>
+          <Link href="/admin/users" className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center">
+            Перейти
+          </Link>
+        </div>
+        
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-800 mb-2">Аналитика</h3>
+          <p className="text-sm text-gray-600 mb-3">Системная статистика и отчеты</p>
+          <Link href="/admin/analytics" className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center">
+            Перейти
+          </Link>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-800 mb-2">Импорт данных</h3>
+          <p className="text-sm text-gray-600 mb-3">Загрузка CSV-файлов с данными пользователей</p>
+          <Link href="/admin/import" className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center">
+            Перейти
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function CabinetPage() {
+  // Получаем роль из localStorage
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
+  useEffect(() => {
+    // Получаем роль из localStorage при монтировании компонента
+    const storedRole = localStorage.getItem('userRole') as UserRole | null;
+    if (storedRole && ['volunteer', 'organization', 'admin'].includes(storedRole)) {
+      setUserRole(storedRole);
+    } else {
+      // Если роль не найдена или некорректна, устанавливаем значение по умолчанию
+      setUserRole('volunteer');
+    }
+  }, []);
+
+  if (!userRole) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50">
-      {/* Навигационная панель */}
       <nav className="sticky top-0 bg-white shadow-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -52,35 +181,9 @@ export default function VolunteerCabinet() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Личный кабинет волонтера</h1>
-          
-          {/* Уровень и бонусы */}
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="flex items-center">
-              <TrophyIcon className="h-8 w-8 text-yellow-500 mr-2" />
-              <span className="text-lg text-gray-600">Уровень бонусов: {volunteerData.level}</span>
-            </div>
-          </div>
-
-        
-
-          {/* Доступные услуги */}
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Доступные услуги</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableServices.map((service) => (
-              <div key={service.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-800 mb-2">{service.name}</h3>
-                <p className="text-sm text-gray-600 mb-3">{service.description}</p>
-                <button 
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Забронировать
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        {userRole === 'volunteer' && <VolunteerCabinet />}
+        {userRole === 'organization' && <OrganizationCabinet />}
+        {userRole === 'admin' && <AdminCabinet />}
       </main>
 
       <footer className="bg-gray-900 text-white py-12">
@@ -112,7 +215,5 @@ export default function VolunteerCabinet() {
         </div>
       </footer>
     </div>
-
-    
   );
 } 

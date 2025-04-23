@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_ADRESS } from "@/lib/api/config";
 
 interface OrganizationLoginData {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  hashed_password: string;
   phone: string;
   address: string;
-  about: string;
   inn: string;
-  category: string;
+  description: string;
+  submit?: string;
+  category: number;
 }
 
 const categories = ["Питание", "Здоровье", "Одежда"];
@@ -23,12 +25,12 @@ export const OrganizationLoginForm = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    hashed_password: "",
     phone: "",
     address: "",
-    about: "",
     inn: "",
-    category: "",
+    description: "",
+    category: 0,
   });
 
   const [errors, setErrors] = useState<Partial<OrganizationLoginData>>({});
@@ -83,8 +85,8 @@ export const OrganizationLoginForm = () => {
       newErrors.password = "Пароль должен содержать минимум 6 символов";
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Пароли не совпадают";
+    if (formData.password !== formData.hashed_password) {
+      newErrors.hashed_password = "Пароли не совпадают";
     }
 
     if (!formData.phone.trim()) {
@@ -97,8 +99,8 @@ export const OrganizationLoginForm = () => {
       newErrors.address = "Адрес обязателен";
     }
 
-    if (!formData.about.trim()) {
-      newErrors.about = "Описание компании обязательно";
+    if (!formData.description.trim()) {
+      newErrors.description = "Описание компании обязательно";
     }
 
     if (!formData.inn.trim()) {
@@ -116,10 +118,45 @@ export const OrganizationLoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        // Имитация запроса
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Регистрация организации:", formData);
+        const response = await fetch(`${API_ADRESS}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            hashed_password: formData.password,
+            phone: formData.phone,
+            address: formData.address,
+            description: formData.description,
+            inn: formData.inn,
+            category: formData.category,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Ошибка при регистрации');
+        }
+
+        const data = await response.json();
+        console.log('Успешная регистрация:', data);
+        // Сохраняем роль в localStorage !!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // поменять местами с проверкой почты
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        localStorage.setItem('userRole', 'organization');
         router.push("/register/verify");
+      } catch (error) {
+        console.error('Ошибка при регистрации:', error);
+        setErrors({ submit: error instanceof Error ? error.message : 'Произошла ошибка при регистрации' });
       } finally {
         setIsLoading(false);
       }
@@ -241,18 +278,18 @@ export const OrganizationLoginForm = () => {
               О компании *
             </label>
             <textarea
-              name="about"
-              value={formData.about}
+              name="description"
+              value={formData.description}
               onChange={handleChange}
               placeholder="Опишите деятельность вашей компании..."
               rows={4}
               className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                errors.about ? "border-red-500" : "border-gray-300"
+                errors.description ? "border-red-500" : "border-gray-300"
               } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 resize-none`}
               disabled={isLoading}
             />
-            {errors.about && (
-              <p className="text-sm text-red-500 mt-2 ml-1">{errors.about}</p>
+            {errors.description && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.description}</p>
             )}
           </div>
 
@@ -307,17 +344,17 @@ export const OrganizationLoginForm = () => {
             </label>
             <input
               type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
+              name="hashed_password"
+              value={formData.hashed_password}
               onChange={handleChange}
               placeholder="••••••••"
               className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                errors.hashed_password ? "border-red-500" : "border-gray-300"
               } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
               disabled={isLoading}
             />
-            {errors.confirmPassword && (
-              <p className="text-sm text-red-500 mt-2 ml-1">{errors.confirmPassword}</p>
+            {errors.hashed_password && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.hashed_password}</p>
             )}
           </div>
 
