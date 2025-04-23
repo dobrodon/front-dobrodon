@@ -1,102 +1,116 @@
 import Image from "next/image";
+import Link from "next/link";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-white">
+      {/* Навигационная панель */}
+      <nav className="sticky top-0 bg-white shadow-sm z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center text-2xl font-bold text-blue-600">
+                <SparklesIcon className="h-8 w-8 mr-2" />
+                Добродон
+              </Link>
+            </div>
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
+              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация</Link>
+              <Link href="/login" className="text-gray-700 hover:text-blue-600">Вход</Link>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </nav>
+
+      {/* Hero секция */}
+      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+              Начните свой путь инноваций с Добродон
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-700 mb-8">
+              Найдите организацию. Получайте бонусы. Запустите свою идею.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/submit" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                Подать проект
+              </Link>
+              <Link href="/projects" className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors">
+                Исследовать проекты
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Секция возможностей */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Возможности платформы</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="text-blue-600 text-4xl mb-4">👥</div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-800">Зарабатывайте бонусы</h3>
+              <p className="text-gray-700">Получайте бонусы за выполнение заданий и за участие в мероприятиях</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="text-blue-600 text-4xl mb-4">🎓</div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-800">Поддержка от организаций</h3>
+              <p className="text-gray-700">Получите помощь от опытных экспертов в вашей области</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="text-blue-600 text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-800">Презентация проектов</h3>
+              <p className="text-gray-700">Найдите организацию и работу по вашим предпочтениям</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Секция партнеров */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Наши партнеры</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 1</div>
+            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 2</div>
+            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 3</div>
+            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 4</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Футер */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4">О нас</h3>
+              <ul className="space-y-2">
+                <li><Link href="/team" className="hover:text-blue-400">Команда</Link></li>
+              </ul>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4">Контакты</h3>
+              <ul className="space-y-2">
+                <li><Link href="/contact" className="hover:text-blue-400">Связаться с нами</Link></li>
+              </ul>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4">Социальные сети</h3>
+              <ul className="space-y-2">
+                <li><Link href="#" className="hover:text-blue-400">ВКонтакте</Link></li>
+                <li><Link href="#" className="hover:text-blue-400">Телеграм</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-800 text-center">
+            <p>© 2025 Добродон. Все права защищены.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
