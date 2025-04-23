@@ -32,43 +32,21 @@ export default function Home() {
               Начните свой путь инноваций с Добродон
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-8">
-              Найдите организацию. Получайте бонусы. Запустите свою идею.
+              Найдите организацию. Используйте бонусы. Предложите свои услуги.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link href="/submit" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                Подать проект
+              <Link href="/register/organization" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                Зарегистрировать организацию
               </Link>
               <Link href="/projects" className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors">
-                Исследовать проекты
+                Найти бонусы
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Секция возможностей */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Возможности платформы</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="text-blue-600 text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">Зарабатывайте бонусы</h3>
-              <p className="text-gray-700">Получайте бонусы за выполнение заданий и за участие в мероприятиях</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="text-blue-600 text-4xl mb-4">🎓</div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">Поддержка от организаций</h3>
-              <p className="text-gray-700">Получите помощь от опытных экспертов в вашей области</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="text-blue-600 text-4xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">Презентация проектов</h3>
-              <p className="text-gray-700">Найдите организацию и работу по вашим предпочтениям</p>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Секция партнеров */}
       <section className="py-20 bg-gray-50">
