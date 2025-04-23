@@ -35,7 +35,7 @@ export default function Home() {
               Найдите организацию. Используйте бонусы. Предложите свои услуги.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link href="/register/organization" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              <Link href="/register" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
                 Зарегистрировать организацию
               </Link>
               <Link href="/projects" className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors">
