@@ -2,6 +2,7 @@
 import { SparklesIcon, StarIcon, TrophyIcon, BuildingOfficeIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 // Тип для роли пользователя
 type UserRole = 'volunteer' | 'organization' | 'admin';
@@ -70,36 +71,13 @@ function VolunteerCabinet() {
 
 // Компонент для организации
 function OrganizationCabinet() {
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Личный кабинет организации</h1>
-      
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="flex items-center">
-          <BuildingOfficeIcon className="h-8 w-8 text-blue-500 mr-2" />
-          <span className="text-lg text-gray-600">Статус: Активна</span>
-        </div>
-      </div>
+  const router = useRouter();
+  
+  useEffect(() => {
+    router.push('/organization/dashboard');
+  }, [router]);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <h3 className="font-medium text-gray-800 mb-2">Мои мероприятия</h3>
-          <p className="text-sm text-gray-600 mb-3">Управление и создание мероприятий</p>
-          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-            Управление
-          </button>
-        </div>
-        
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <h3 className="font-medium text-gray-800 mb-2">Статистика</h3>
-          <p className="text-sm text-gray-600 mb-3">Просмотр статистики и отчетов</p>
-          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-            Открыть
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 // Компонент для администратора
@@ -147,6 +125,7 @@ function AdminCabinet() {
 export default function CabinetPage() {
   // Получаем роль из localStorage
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // Получаем роль из localStorage при монтировании компонента
@@ -154,8 +133,8 @@ export default function CabinetPage() {
     if (storedRole && ['volunteer', 'organization', 'admin'].includes(storedRole)) {
       setUserRole(storedRole);
     } else {
-      // Если роль не найдена или некорректна, устанавливаем значение по умолчанию
-      setUserRole('volunteer');
+      // Если роль не найдена или некорректна, перенаправляем на главную страницу
+      router.push('/');
     }
   }, []);
 
