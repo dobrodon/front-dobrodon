@@ -14,9 +14,10 @@ interface OrganizationLoginData {
   inn: string;
   description: string;
   submit?: string;
-  category: number;
+  category: string;
 }
 
+<<<<<<< HEAD
 interface FormErrors {
   name?: string;
   email?: string;
@@ -30,6 +31,8 @@ interface FormErrors {
   category?: string;
 }
 
+=======
+>>>>>>> 58e0f5e1a5fcaac056df4ad656369e5d444c69e5
 const categories = ["Питание", "Здоровье", "Одежда"];
 
 export const OrganizationLoginForm = () => {
@@ -43,7 +46,7 @@ export const OrganizationLoginForm = () => {
     address: "",
     inn: "",
     description: "",
-    category: 0,
+    category: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});

@@ -9,6 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@heroicons/react": "^2.2.0",
+    "@types/lodash": "^4.17.16",
+    "lodash": "^4.17.21",
+>>>>>>> 58e0f5e1a5fcaac056df4ad656369e5d444c69e5
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
