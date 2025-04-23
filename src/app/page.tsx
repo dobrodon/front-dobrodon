@@ -38,7 +38,7 @@ export default function Home() {
               <Link href="/register" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
                 Зарегистрировать организацию
               </Link>
-              <Link href="/projects" className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors">
+              <Link href="/partners" className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors">
                 Найти бонусы
               </Link>
             </div>
