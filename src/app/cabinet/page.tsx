@@ -1,5 +1,7 @@
+"use client"
 import { SparklesIcon, StarIcon, TrophyIcon, BuildingOfficeIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 // Тип для роли пользователя
 type UserRole = 'volunteer' | 'organization' | 'admin';
@@ -129,14 +131,39 @@ function AdminCabinet() {
             Перейти
           </Link>
         </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="font-medium text-gray-800 mb-2">Импорт данных</h3>
+          <p className="text-sm text-gray-600 mb-3">Загрузка CSV-файлов с данными пользователей</p>
+          <Link href="/admin/import" className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center">
+            Перейти
+          </Link>
+        </div>
       </div>
     </div>
   );
 }
 
 export default function CabinetPage() {
-  // В реальном приложении роль будет приходить из контекста или состояния
-  const userRole: UserRole = 'admin'; // Здесь будет логика получения роли пользователя
+  // Получаем роль из localStorage
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
+  useEffect(() => {
+    // Получаем роль из localStorage при монтировании компонента
+    const storedRole = localStorage.getItem('userRole') as UserRole | null;
+    if (storedRole && ['volunteer', 'organization', 'admin'].includes(storedRole)) {
+      setUserRole(storedRole);
+    } else {
+      // Если роль не найдена или некорректна, устанавливаем значение по умолчанию
+      setUserRole('volunteer');
+    }
+  }, []);
+
+  if (!userRole) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
