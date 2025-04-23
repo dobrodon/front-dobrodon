@@ -17,8 +17,8 @@ export default function Home() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
-              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация</Link>
-              <Link href="/login" className="text-gray-700 hover:text-blue-600">Вход</Link>
+              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              <Link href="/autorize" className="text-gray-700 hover:text-blue-600">Вход</Link>
             </div>
           </div>
         </div>
