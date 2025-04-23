@@ -14,8 +14,10 @@ interface OrganizationLoginData {
   inn: string;
   description: string;
   submit?: string;
-  category: number;
+  category: string;
 }
+
+const categories = ["Питание", "Здоровье", "Одежда"];
 
 export const OrganizationLoginForm = () => {
   const router = useRouter();
@@ -28,7 +30,7 @@ export const OrganizationLoginForm = () => {
     address: "",
     inn: "",
     description: "",
-    category: 0,
+    category: "",
   });
 
   const [errors, setErrors] = useState<Partial<OrganizationLoginData>>({});
@@ -49,7 +51,7 @@ export const OrganizationLoginForm = () => {
     return re.test(inn.replace(/\s+/g, ""));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     // Для ИНН разрешаем только цифры
     if (name === "inn") {
@@ -105,6 +107,10 @@ export const OrganizationLoginForm = () => {
       newErrors.inn = "ИНН обязателен";
     } else if (!validateInn(formData.inn)) {
       newErrors.inn = "ИНН должен содержать 10 или 12 цифр";
+    }
+
+    if (!formData.category) {
+      newErrors.category = "Категория обязательна";
     }
 
     setErrors(newErrors);
@@ -284,6 +290,31 @@ export const OrganizationLoginForm = () => {
             />
             {errors.description && (
               <p className="text-sm text-red-500 mt-2 ml-1">{errors.description}</p>
+            )}
+          </div>
+
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Категория *
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
+                errors.category ? "border-red-500" : "border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+              disabled={isLoading}
+            >
+              <option value="">Выберите категорию</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.category}</p>
             )}
           </div>
 
