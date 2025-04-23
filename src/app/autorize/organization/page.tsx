@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_ADRESS } from "@/lib/api/config";
 
 interface OrganizationLoginData {
   name: string;
   email: string;
   password: string;
+}
+
+interface LoginErrors extends Partial<OrganizationLoginData> {
+  submit?: string;
 }
 
 export const OrganizationLoginForm = () => {
@@ -17,9 +22,8 @@ export const OrganizationLoginForm = () => {
     password: "",
   });
 
-  const [errors, setErrors] = useState<Partial<OrganizationLoginData>>({});
+  const [errors, setErrors] = useState<LoginErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,7 +40,7 @@ export const OrganizationLoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Partial<OrganizationLoginData> = {};
+    const newErrors: LoginErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = "Название организации обязательно";
@@ -57,42 +61,54 @@ export const OrganizationLoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Вход организации:", formData);
-        router.push("/register/verify");
+        const response = await fetch("http://25.39.40.75:8013/login", {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Ошибка при авторизации');
+        }
+
+        const data = await response.json();
+        console.log('Успешная авторизация:', data);
+        
+        // Сохраняем токен в localStorage
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('userRole', 'organization');
+        
+        router.push("/");
+      } catch (error) {
+        console.error('Ошибка при авторизации:', error);
+        setErrors({ submit: error instanceof Error ? error.message : 'Произошла ошибка при авторизации' });
       } finally {
         setIsLoading(false);
       }
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="w-full max-w-md mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Успешный вход</h2>
-          <p className="text-gray-700">Добро пожаловать, {formData.name}!</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-600 p-6">
-          <h2 className="text-2xl font-bold text-white">Вход для организаций</h2>
-          <p className="text-blue-100 mt-1">Введите название, email и пароль</p>
+          <h2 className="text-2xl font-bold text-white">Авторизация организации</h2>
+          <p className="text-blue-100 mt-1">Введите данные для входа</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Название организации *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Название организации *
+            </label>
             <input
               type="text"
               name="name"
@@ -104,11 +120,15 @@ export const OrganizationLoginForm = () => {
               } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
               disabled={isLoading}
             />
-            {errors.name && <p className="text-sm text-red-500 mt-2 ml-1">{errors.name}</p>}
+            {errors.name && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.name}</p>
+            )}
           </div>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email *
+            </label>
             <input
               type="email"
               name="email"
@@ -120,11 +140,15 @@ export const OrganizationLoginForm = () => {
               } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
               disabled={isLoading}
             />
-            {errors.email && <p className="text-sm text-red-500 mt-2 ml-1">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.email}</p>
+            )}
           </div>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Пароль *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Пароль *
+            </label>
             <input
               type="password"
               name="password"
@@ -136,8 +160,16 @@ export const OrganizationLoginForm = () => {
               } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
               disabled={isLoading}
             />
-            {errors.password && <p className="text-sm text-red-500 mt-2 ml-1">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-sm text-red-500 mt-2 ml-1">{errors.password}</p>
+            )}
           </div>
+
+          {errors.submit && (
+            <div className="text-red-500 text-sm text-center">
+              {errors.submit}
+            </div>
+          )}
 
           <button
             type="submit"
@@ -146,7 +178,7 @@ export const OrganizationLoginForm = () => {
               isLoading ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
-            {isLoading ? "Вход..." : "Войти"}
+            {isLoading ? "Авторизация..." : "Войти"}
           </button>
 
           <div className="text-center">
@@ -162,4 +194,4 @@ export const OrganizationLoginForm = () => {
       </div>
     </div>
   );
-};
+}; 
