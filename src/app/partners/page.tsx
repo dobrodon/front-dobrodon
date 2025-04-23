@@ -1,0 +1,208 @@
+"use client"
+import { useState, useEffect, useCallback } from 'react';
+import { debounce } from 'lodash';
+import Image from "next/image";
+import Link from "next/link";
+import { SparklesIcon } from "@heroicons/react/24/outline";
+
+// Mock data for partner organizations
+const mockPartners = [
+  {
+    id: 1,
+    name: "Кафе 'Вкусно и точка'",
+    inn: "1234567890",
+    email: "cafe@example.com",
+    phone: "+7 (999) 123-45-67",
+    password: "hashed_password",
+    address: "ул. Пушкина, 10",
+    description: "Сеть кафе быстрого питания с вкусной и полезной едой",
+    category: "Питание",
+    logo: "C:/front-dobrodon/front-dobrodon/src/app/favicon.ico"
+  },
+  {
+    id: 2,
+    name: "Спортивный клуб 'Фитнес'",
+    inn: "0987654321",
+    email: "fitness@example.com",
+    phone: "+7 (999) 765-43-21",
+    password: "hashed_password",
+    address: "пр. Ленина, 25",
+    description: "Современный фитнес-клуб с профессиональными тренерами",
+    category: "Здоровье",
+    logo: "/images/fitness-logo.png"
+  },
+  {
+    id: 3,
+    name: "Магазин 'Модный стиль'",
+    inn: "1122334455",
+    email: "fashion@example.com",
+    phone: "+7 (999) 888-77-66",
+    password: "hashed_password",
+    address: "ул. Гагарина, 15",
+    description: "Магазин модной одежды и аксессуаров",
+    category: "Одежда",
+    logo: "/images/fashion-logo.png"
+  }
+];
+
+const categories = ["Все", "Питание", "Здоровье", "Одежда"];
+
+export default function PartnersPage() {
+  const [partners, setPartners] = useState(mockPartners);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Все");
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      const filtered = mockPartners.filter(partner =>
+        partner.name.toLowerCase().includes(term.toLowerCase()) &&
+        (selectedCategory === "Все" || partner.category === selectedCategory)
+      );
+      setPartners(filtered);
+    }, 300),
+    [selectedCategory]
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+    return () => debouncedSearch.cancel();
+  }, [searchTerm, debouncedSearch]);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    const filtered = mockPartners.filter(partner =>
+      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (category === "Все" || partner.category === category)
+    );
+    setPartners(filtered);
+  };
+
+  return (
+    <div>
+      <nav className="sticky top-0 bg-white shadow-sm z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center text-2xl font-bold text-blue-600">
+                <SparklesIcon className="h-8 w-8 mr-2" />
+                Добродон
+              </Link>
+            </div>
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
+              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              <Link href="/autorize" className="text-gray-700 hover:text-blue-600">Вход</Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          Организации-партнёры
+        </h1>
+
+        {/* Search and Filter Section */}
+        <div className="mb-8 space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Поиск по названию организации"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex space-x-2">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => handleCategoryChange(category)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Partners Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {partners.map((partner) => (
+            <div
+              key={partner.id}
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
+            >
+              <div className="p-6 flex-grow flex flex-col">
+                <div className="flex items-center mb-4 h-20">
+                  {partner.logo && (
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="w-16 h-16 object-cover rounded-full mr-4"
+                    />
+                  )}
+                  <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
+                    {partner.name}
+                  </h2>
+                </div>
+                <div className="mb-4 h-24">
+                  <p className="text-gray-600 line-clamp-3">{partner.description}</p>
+                </div>
+                <div className="mb-4 h-8">
+                  <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                    {partner.category}
+                  </span>
+                </div>
+                <div className="h-12">
+                  <p className="text-gray-500 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    <span className="line-clamp-2">{partner.address}</span>
+                  </p>
+                </div>
+              </div>
+              <div className="p-6 pt-0">
+                <button
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                  onClick={() => {
+                    // Handle "Подробнее" click
+                    console.log(`View details for ${partner.name}`);
+                  }}
+                >
+                  Подробнее
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+    </div>
+    
+  );
+} 
