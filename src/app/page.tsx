@@ -1,17 +1,29 @@
 "use client"
 import Image from "next/image";
 import Link from "next/link";
-import { SparklesIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
+import { fetchOrganizations } from "@/lib/api/import";
+import { shuffle } from "lodash";
 
 export default function Home() {
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [organizations, setOrganizations] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const role = localStorage.getItem('userRole');
       setUserRole(role);
     }
+
+    async function loadOrganizations() {
+      const orgs = await fetchOrganizations();
+      const shuffledOrgs = shuffle(orgs).slice(0, 4);
+      setOrganizations(shuffledOrgs);
+    }
+
+    loadOrganizations();
   }, []);
 
   const isAuthorized = userRole === 'volunteer' || userRole === 'admin' || userRole === 'organization';
@@ -28,6 +40,18 @@ export default function Home() {
                 Добродон
               </Link>
             </div>
+            <div className="flex items-center md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-700 hover:text-blue-600 focus:outline-none"
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" />
+                )}
+              </button>
+            </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
               {!isAuthorized && (
@@ -42,6 +66,22 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white shadow-sm">
+            <div className="space-y-4 px-4 py-4">
+              <Link href="/" className="block text-gray-700 hover:text-blue-600">Главная</Link>
+              {!isAuthorized && (
+                <Link href="/register" className="block text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              )}
+              <Link 
+                href={isAuthorized ? "/cabinet" : "/autorize"} 
+                className="block text-gray-700 hover:text-blue-600"
+              >
+                {isAuthorized ? "Личный кабинет" : "Вход"}
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero секция */}
@@ -71,10 +111,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Наши партнеры</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
-            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 1</div>
-            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 2</div>
-            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 3</div>
-            <div className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">Логотип 4</div>
+            {organizations.map((org, index) => (
+              <div key={index} className="bg-white h-20 flex items-center justify-center rounded-lg shadow-sm text-gray-800">
+                {org}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -98,8 +139,8 @@ export default function Home() {
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-4">Социальные сети</h3>
               <ul className="space-y-2">
-                <li><Link href="#" className="hover:text-blue-400">ВКонтакте</Link></li>
-                <li><Link href="#" className="hover:text-blue-400">Телеграм</Link></li>
+                <li><Link href="https://vk.com/y.vasilchenko" className="hover:text-blue-400">ВКонтакте</Link></li>
+                <li><Link href="https://t.me/aip_fikita" className="hover:text-blue-400">Телеграм</Link></li>
               </ul>
             </div>
           </div>

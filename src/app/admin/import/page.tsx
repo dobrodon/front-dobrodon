@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { API_ADRESS } from '@/lib/api/config';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 
 interface ImportData {
   fullName: string;
@@ -14,6 +17,16 @@ interface ImportData {
 }
 
 export default function ImportPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "admin") {
+      router.push("/");
+    }
+  }, [router]);
+
+
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -35,7 +48,7 @@ export default function ImportPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${API_ADRESS}/api/import`, {
+      const response = await fetch(`${API_ADRESS}/upload-csv`, {
         method: 'POST',
         body: formData,
       });
