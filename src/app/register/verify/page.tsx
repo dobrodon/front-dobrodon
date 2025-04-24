@@ -1,29 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { API_ADRESS } from "@/lib/api/config";
+import { useRouter } from "next/navigation";
 
 export default function VerifyEmailPage() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendMessage, setResendMessage] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const userData = {
-    full_name: searchParams.get('full_name') || '',
-    email: searchParams.get('email') || ''
-  };
-
-  useEffect(() => {
-    if (!userData.full_name || !userData.email) {
-      router.push('/autorize/volunter');
-    }
-  }, [userData, router]);
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) return;
@@ -57,26 +42,8 @@ export default function VerifyEmailPage() {
     }
 
     try {
-      const response = await fetch(`${API_ADRESS}/verify-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({
-          email: userData.email,
-          code: fullCode
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Неверный код подтверждения');
-      }
-
-      const data = await response.json();
-      // Сохраняем токен в localStorage
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('token_type', data.token_type);
+      // Здесь будет логика проверки кода
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       
       // После успешной проверки перенаправляем на главную страницу
       router.push("/");
@@ -84,29 +51,6 @@ export default function VerifyEmailPage() {
       setError("Неверный код подтверждения");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    setIsResending(true);
-    setResendMessage("");
-    
-    try {
-      const response = await fetch(`${API_ADRESS}/send-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-      setResendMessage(data.message);
-    } catch (err) {
-      setResendMessage("Ошибка при отправке кода");
-    } finally {
-      setIsResending(false);
     }
   };
 
@@ -165,17 +109,13 @@ export default function VerifyEmailPage() {
             <div className="text-center">
               <button
                 type="button"
-                onClick={handleResendCode}
-                disabled={isResending}
-                className={`text-sm text-blue-600 hover:text-blue-700 font-medium ${
-                  isResending ? "opacity-75 cursor-not-allowed" : ""
-                }`}
+                onClick={() => {
+                  // Здесь будет логика повторной отправки кода
+                }}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
-                {isResending ? "Отправка..." : "Отправить код повторно"}
+                Отправить код повторно
               </button>
-              {resendMessage && (
-                <p className="text-sm text-green-600 mt-2">{resendMessage}</p>
-              )}
             </div>
 
             <div className="text-center">

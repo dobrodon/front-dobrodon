@@ -2,14 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { API_ADRESS } from "@/lib/api/config";
 
 export default function VerifyEmailPage() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendMessage, setResendMessage] = useState("");
   const router = useRouter();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -54,32 +51,6 @@ export default function VerifyEmailPage() {
       setError("Неверный код подтверждения");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    setIsResending(true);
-    setResendMessage("");
-    
-    try {
-      const response = await fetch(`${API_ADRESS}/send-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({
-          full_name: "Коля",
-          email: "kozacenkonikolaj237@gmail.com"
-        }),
-      });
-
-      const data = await response.json();
-      setResendMessage(data.message);
-    } catch (err) {
-      setResendMessage("Ошибка при отправке кода");
-    } finally {
-      setIsResending(false);
     }
   };
 
@@ -138,26 +109,12 @@ export default function VerifyEmailPage() {
             <div className="text-center">
               <button
                 type="button"
-                onClick={handleResendCode}
-                disabled={isResending}
-                className={`text-sm text-blue-600 hover:text-blue-700 font-medium ${
-                  isResending ? "opacity-75 cursor-not-allowed" : ""
-                }`}
+                onClick={() => {
+                  // Здесь будет логика повторной отправки кода
+                }}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
-                {isResending ? "Отправка..." : "Отправить код повторно"}
-              </button>
-              {resendMessage && (
-                <p className="text-sm text-green-600 mt-2">{resendMessage}</p>
-              )}
-            </div>
-
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => router.push("/")}
-                className="text-sm text-gray-600 hover:text-gray-800 font-medium transition duration-200"
-              >
-                ← Вернуться в главное меню
+                Отправить код повторно
               </button>
             </div>
           </form>

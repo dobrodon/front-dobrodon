@@ -61,7 +61,7 @@ export const OrganizationLoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_ADRESS}/login`, {
+        const response = await fetch("http://25.39.40.75:8013/login", {
           method: 'POST',
           headers: {
             'accept': 'application/json',
