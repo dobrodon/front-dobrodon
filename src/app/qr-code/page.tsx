@@ -13,7 +13,6 @@ interface QRResponse {
   created_by: string;
   rating: number;
   message: string;
-  id: number;
 }
 
 export default function QRCodePage() {
@@ -50,8 +49,17 @@ export default function QRCodePage() {
       const data = await response.json();
       setQrResponse(data);
       
-      // Create QR data with only the hash value
-      setQrData(data.hash_value);
+      // Create QR data object with all fields
+      const qrDataObject = {
+        hash_value: data.hash_value,
+        created_at: data.created_at,
+        created_by: data.created_by,
+        rating: data.rating,
+        message: data.message
+      };
+      
+      // Convert to JSON string for QR code
+      setQrData(JSON.stringify(qrDataObject));
     } catch (err) {
       setError('Ошибка при генерации QR-хеша');
       console.error(err);
@@ -65,36 +73,9 @@ export default function QRCodePage() {
     
     const canvas = document.querySelector('canvas');
     if (canvas) {
-      // Create a temporary canvas with optimal size
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      
-      if (!tempCtx) return;
-      
-      // Set optimal size for scanning
-      const size = 512;
-      tempCanvas.width = size;
-      tempCanvas.height = size;
-      
-      // Clear with white background
-      tempCtx.fillStyle = '#ffffff';
-      tempCtx.fillRect(0, 0, size, size);
-      
-      // Draw the QR code with high quality
-      tempCtx.imageSmoothingEnabled = false;
-      tempCtx.drawImage(canvas, 0, 0, size, size);
-      
-      // Add a white border
-      const borderSize = 20;
-      tempCtx.strokeStyle = '#ffffff';
-      tempCtx.lineWidth = borderSize;
-      tempCtx.strokeRect(0, 0, size, size);
-      
-      // Convert to PNG with maximum quality
-      const pngUrl = tempCanvas
-        .toDataURL("image/png", 1.0)
+      const pngUrl = canvas
+        .toDataURL("image/png")
         .replace("image/png", "image/octet-stream");
-      
       const downloadLink = document.createElement("a");
       downloadLink.href = pngUrl;
       downloadLink.download = "qr-code.png";
@@ -145,12 +126,9 @@ export default function QRCodePage() {
               <div className="p-4 bg-white rounded-lg border border-gray-200">
                 <QRCodeCanvas
                   value={qrData}
-                  size={512}
+                  size={256}
                   level="H"
                   includeMargin={true}
-                  bgColor="#ffffff"
-                  fgColor="#000000"
-                  marginSize={4}
                 />
               </div>
               
@@ -165,7 +143,6 @@ export default function QRCodePage() {
                   <p className="text-sm text-gray-600">Создан: {new Date(qrResponse.created_at).toLocaleString()}</p>
                   <p className="text-sm text-gray-600">Создатель: {qrResponse.created_by}</p>
                   <p className="text-sm text-gray-600">Рейтинг: {qrResponse.rating}</p>
-                  <p className="text-sm text-gray-600">ID: {qrResponse.id}</p>
                 </div>
               ) : null}
               
@@ -175,12 +152,6 @@ export default function QRCodePage() {
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Скачать QR-код
-                </button>
-                <button
-                  onClick={handleClearEmail}
-                  className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  Очистить email
                 </button>
               </div>
             </div>
