@@ -64,7 +64,7 @@ function VolunteerCabinet() {
 
   const handleGenerateQR = async () => {
     try {
-      const qrData = 'kyugiuyguy778t976ti76r5fi6r';
+      const qrData = 'https://github.com/dobrodon/front-dobrodon/';
       router.push(`/qr-code?data=${encodeURIComponent(qrData)}`);
     } catch (error) {
       console.error('Error generating QR code:', error);
@@ -98,6 +98,7 @@ function VolunteerCabinet() {
             <span className="text-lg text-gray-600">Уровень бонусов: {volunteerData.level}</span>
           </div>
         </div>
+
 
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Доступные услуги</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -190,6 +191,7 @@ function AdminCabinet() {
           </Link>
         </div>
 
+
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <h3 className="font-medium text-gray-800 mb-2">Импорт данных</h3>
           <p className="text-sm text-gray-600 mb-3">Загрузка CSV-файлов с данными пользователей</p>
@@ -275,4 +277,4 @@ export default function CabinetPage() {
       </footer>
     </div>
   );
-} 
+}

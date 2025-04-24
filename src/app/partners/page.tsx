@@ -79,6 +79,8 @@ export default function PartnersPage() {
     setOrganizations(filtered);
   };
 
+
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -108,8 +110,15 @@ export default function PartnersPage() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
-              <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
-              <Link href="/autorize" className="text-gray-700 hover:text-blue-600">Вход</Link>
+              {!isAuthorized && (
+                <Link href="/register" className="text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              )}
+              <Link 
+                href={isAuthorized ? "/cabinet" : "/autorize"} 
+                className="text-gray-700 hover:text-blue-600"
+              >
+                {isAuthorized ? "Личный кабинет" : "Вход"}
+              </Link>
             </div>
           </div>
         </div>
