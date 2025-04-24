@@ -8,7 +8,6 @@ interface Volunteer {
   id: string;
   fullName: string;
   email: string;
-  bonusAmount: number;
   date: string;
 }
 
@@ -17,7 +16,6 @@ interface Organization {
   email: string;
   phone: string;
   category: string;
-  totalBonusesIssued: number;
   address?: string;
   about?: string;
   inn?: string;
@@ -28,7 +26,6 @@ const mockOrganization: Organization = {
   email: "help@example.com",
   phone: "+7 (999) 123-45-67",
   category: "Питание",
-  totalBonusesIssued: 156,
   address: "г. Москва, ул. Примерная, д. 1",
   about: "Организация, занимающаяся благотворительностью и помощью нуждающимся",
   inn: "1234567890"
@@ -39,35 +36,30 @@ const mockVolunteers: Volunteer[] = [
     id: "1",
     fullName: "Иванов Иван Иванович",
     email: "ivanov@example.com",
-    bonusAmount: 100,
     date: "2024-03-15",
   },
   {
     id: "2",
     fullName: "Петрова Мария Сергеевна",
     email: "petrova@example.com",
-    bonusAmount: 50,
     date: "2024-03-14",
   },
   {
     id: "3",
     fullName: "Сидоров Алексей Петрович",
     email: "sidorov@example.com",
-    bonusAmount: 75,
     date: "2024-03-13",
   },
   {
     id: "4",
     fullName: "Козлова Елена Дмитриевна",
     email: "kozlova@example.com",
-    bonusAmount: 30,
     date: "2024-03-12",
   },
   {
     id: "5",
     fullName: "Михайлов Дмитрий Алексеевич",
     email: "mikhailov@example.com",
-    bonusAmount: 120,
     date: "2024-03-11",
   },
 ];
@@ -81,6 +73,8 @@ const navigationItems = [
 const categories = ["Питание", "Здоровье", "Одежда"];
 
 export default function OrganizationDashboard() {
+
+  
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('обзор');
   const [isBonusModalOpen, setIsBonusModalOpen] = useState(false);
@@ -90,7 +84,15 @@ export default function OrganizationDashboard() {
   const [editFormData, setEditFormData] = useState<Organization>(mockOrganization);
   const [editErrors, setEditErrors] = useState<Partial<Organization>>({});
 
-  const usedBonusesCount = volunteers.filter(v => v.bonusAmount > 0).length;
+  const usedBonusesCount = volunteers.filter(v => v.id !== "").length;
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "organization") {
+      router.push("/");
+    }
+  }, [router]);
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -197,11 +199,10 @@ export default function OrganizationDashboard() {
                     <li key={item.name}>
                       <button
                         onClick={() => setActiveTab(item.name.toLowerCase())}
-                        className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                          activeTab === item.name.toLowerCase()
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${activeTab === item.name.toLowerCase()
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-gray-700 hover:bg-gray-50'
+                          }`}
                       >
                         <item.icon className="h-5 w-5 mr-3" />
                         {item.name}
@@ -241,7 +242,7 @@ export default function OrganizationDashboard() {
                             <p className="text-sm text-gray-500">{volunteer.email}</p>
                           </div>
                           <div className="text-right">
-                            
+
                             <p className="text-sm text-gray-500">{formatDate(volunteer.date)}</p>
                           </div>
                         </div>
@@ -287,7 +288,7 @@ export default function OrganizationDashboard() {
                       <label className="block text-sm font-medium text-gray-700">ИНН</label>
                       <p className="mt-1 text-sm text-gray-900">{organization.inn}</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         setEditFormData(organization);
                         setIsEditing(true);
@@ -306,9 +307,8 @@ export default function OrganizationDashboard() {
                         name="name"
                         value={editFormData.name}
                         onChange={handleEditChange}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.name ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.name ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       />
                       {editErrors.name && <p className="text-sm text-red-500 mt-2 ml-1">{editErrors.name}</p>}
                     </div>
@@ -321,9 +321,8 @@ export default function OrganizationDashboard() {
                         value={editFormData.inn}
                         onChange={handleEditChange}
                         maxLength={12}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.inn ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.inn ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       />
                       {editErrors.inn && <p className="text-sm text-red-500 mt-2 ml-1">{editErrors.inn}</p>}
                     </div>
@@ -335,9 +334,8 @@ export default function OrganizationDashboard() {
                         name="email"
                         value={editFormData.email}
                         onChange={handleEditChange}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.email ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.email ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       />
                       {editErrors.email && <p className="text-sm text-red-500 mt-2 ml-1">{editErrors.email}</p>}
                     </div>
@@ -349,9 +347,8 @@ export default function OrganizationDashboard() {
                         name="phone"
                         value={editFormData.phone}
                         onChange={handleEditChange}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.phone ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.phone ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       />
                       {editErrors.phone && <p className="text-sm text-red-500 mt-2 ml-1">{editErrors.phone}</p>}
                     </div>
@@ -363,9 +360,8 @@ export default function OrganizationDashboard() {
                         name="address"
                         value={editFormData.address}
                         onChange={handleEditChange}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.address ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.address ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       />
                       {editErrors.address && <p className="text-sm text-red-500 mt-2 ml-1">{editErrors.address}</p>}
                     </div>
@@ -377,9 +373,8 @@ export default function OrganizationDashboard() {
                         value={editFormData.about}
                         onChange={handleEditChange}
                         rows={4}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.about ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.about ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       />
                       {editErrors.about && <p className="text-sm text-red-500 mt-2 ml-1">{editErrors.about}</p>}
                     </div>
@@ -390,9 +385,8 @@ export default function OrganizationDashboard() {
                         name="category"
                         value={editFormData.category}
                         onChange={handleEditChange}
-                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${
-                          editErrors.category ? "border-red-500" : "border-gray-300"
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
+                        className={`w-full px-4 py-3 rounded-lg border text-gray-900 ${editErrors.category ? "border-red-500" : "border-gray-300"
+                          } focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200`}
                       >
                         <option value="">Выберите категорию</option>
                         {categories.map((category) => (
@@ -431,22 +425,30 @@ export default function OrganizationDashboard() {
                   <p className="mt-1 text-sm text-gray-500">Все волонтёры, посетившие организацию</p>
                 </div>
                 <div className="divide-y divide-gray-200">
-                  {volunteers.map((volunteer) => (
-                    <div key={volunteer.id} className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{volunteer.fullName}</p>
-                          <p className="text-sm text-gray-500">{volunteer.email}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900">
-                            
-                          </p>
-                          <p className="text-sm text-gray-500">{formatDate(volunteer.date)}</p>
+                  {volunteers.map((volunteer) => {
+                    // Извлекаем имя (второе слово) из полного ФИО
+                    const nameParts = volunteer.fullName.split(' ');
+                    const firstName = nameParts.length > 1 ? nameParts[1] : volunteer.fullName;
+
+                    // Определяем название бонуса на основе категории организации
+                    const bonusName = organization.category === "Питание" ? "Обед" :
+                      organization.category === "Здоровье" ? "Медосмотр" :
+                        "Комплект одежды";
+
+                    return (
+                      <div key={volunteer.id} className="px-6 py-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{firstName}</p>
+                            <p className="text-sm text-gray-500">Получен бонус: {bonusName}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500">{formatDate(volunteer.date)}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
