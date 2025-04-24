@@ -1,2 +1,2 @@
 
-export const API_ADRESS = "http://25.39.40.75:8018"
+export const API_ADRESS = "http://26.233.92.17:8018"
