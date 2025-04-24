@@ -1,6 +1,6 @@
 "use client"
 import { useState } from 'react';
-import { VolunteerLoginForm } from './volunter/page';
+import VolunteerLoginForm from './volunter/page';
 import { OrganizationLoginForm } from './organization/page';
 
 export default function RegistrationPage() {
