@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dobrodon Frontend
 
-## Getting Started
+Это фронтенд-приложение на Next.js для проекта Dobrodon, построенное с использованием современных веб-технологий и оптимизированное для производительности.
 
-First, run the development server:
+## 🚀 Возможности
+
+- Next.js 15 с App Router
+- TypeScript для типобезопасности
+- TailwindCSS для стилизации
+- Генерация и сканирование QR-кодов
+- Современные возможности React 19
+- Интеграция с бэкенд-сервисами
+
+## 📋 Требования
+
+- Node.js (рекомендуется LTS версия)
+- npm или yarn
+
+## 🛠️ Установка
+
+1. Клонируйте репозиторий:
+```bash
+git clone [repository-url]
+cd front-dobrodon
+```
+
+2. Установите зависимости:
+```bash
+npm install
+# или
+yarn install
+```
+
+## 🚀 Разработка
+
+Запустите сервер разработки:
 
 ```bash
 npm run dev
-# or
+# или
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔧 Конфигурация
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Приложение настроено на подключение к бэкенд API по адресу:
+```
+http://26.233.92.17:8020
+```
 
-## Learn More
+Вы можете изменить адрес API в файле `src/lib/api/config.ts` при необходимости.
 
-To learn more about Next.js, take a look at the following resources:
+## 📦 Доступные скрипты
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` - Запуск сервера разработки с Turbopack
+- `npm run build` - Сборка приложения для продакшена
+- `npm run start` - Запуск продакшен-сервера
+- `npm run lint` - Запуск ESLint для проверки качества кода
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Технологический стек
 
-## Deploy on Vercel
+- **Фреймворк**: Next.js 15
+- **Язык**: TypeScript
+- **Стилизация**: TailwindCSS
+- **UI Компоненты**: Heroicons
+- **QR-код**: qrcode.react, jsqr
+- **Утилиты**: Lodash
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Документация
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Документация Next.js](https://nextjs.org/docs)
+- [Документация React](https://react.dev)
+- [Документация TailwindCSS](https://tailwindcss.com/docs)
+
+## 🤝 Участие в разработке
+
+1. Форкните репозиторий
+2. Создайте ветку для вашей функции (`git checkout -b feature/amazing-feature`)
+3. Зафиксируйте изменения (`git commit -m 'Добавлена потрясающая функция'`)
+4. Отправьте изменения в ветку (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
+
+## 📄 Лицензия
+
+Этот проект лицензирован под MIT License - подробности смотрите в файле LICENSE.
