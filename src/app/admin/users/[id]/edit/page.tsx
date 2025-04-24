@@ -1,7 +1,22 @@
+"use client"
+
 import { SparklesIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function EditUserPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "admin") {
+      router.push("/");
+    }
+  }, [router]);
+
+
+
   // В реальном приложении данные будут загружаться из API
   const user = {
     id: parseInt(params.id),

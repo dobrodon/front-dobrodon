@@ -73,6 +73,8 @@ const navigationItems = [
 const categories = ["Питание", "Здоровье", "Одежда"];
 
 export default function OrganizationDashboard() {
+
+  
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('обзор');
   const [isBonusModalOpen, setIsBonusModalOpen] = useState(false);
@@ -83,6 +85,14 @@ export default function OrganizationDashboard() {
   const [editErrors, setEditErrors] = useState<Partial<Organization>>({});
 
   const usedBonusesCount = volunteers.filter(v => v.id !== "").length;
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "organization") {
+      router.push("/");
+    }
+  }, [router]);
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
