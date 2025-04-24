@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import Image from "next/image";
 import Link from "next/link";
 import { SparklesIcon } from "@heroicons/react/24/outline";
+import { API_ADRESS } from '@/lib/api/config';
 
 interface Organization {
   id: number;
@@ -28,7 +29,7 @@ export default function PartnersPage() {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await fetch("http://25.39.40.75:8013/organizations", {
+        const response = await fetch(`${API_ADRESS}/organizations`, {
           method: 'GET',
           headers: {
             'accept': 'application/json',
@@ -78,16 +79,8 @@ export default function PartnersPage() {
     setOrganizations(filtered);
   };
 
-<!--   const [userRole, setUserRole] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const role = localStorage.getItem('userRole');
-      setUserRole(role);
-    }
-  }, []);
 
-  const isAuthorized = userRole === 'volunteer' || userRole === 'admin' || userRole === 'organization'; -->
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
