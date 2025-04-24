@@ -79,6 +79,16 @@ export default function PartnersPage() {
     setOrganizations(filtered);
   };
 
+  const [userRole, setUserRole] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const role = localStorage.getItem('userRole');
+      setUserRole(role);
+    }
+  }, []);
+
+  const isAuthorized = userRole === 'volunteer' || userRole === 'admin' || userRole === 'organization';
+
 
 
   if (isLoading) {
@@ -98,6 +108,8 @@ export default function PartnersPage() {
   }
 
   return (
+
+    
     <div>
       <nav className="sticky top-0 bg-white shadow-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
