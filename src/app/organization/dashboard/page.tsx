@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { SparklesIcon, UserIcon, GiftIcon, UsersIcon, ClockIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, UserIcon, GiftIcon, UsersIcon, ClockIcon, Cog6ToothIcon, QrCodeIcon } from '@heroicons/react/24/outline';
+import { API_ADRESS } from '@/lib/api/config';
+import jsQR from 'jsqr';  
 
 interface Volunteer {
   id: string;
@@ -10,6 +12,14 @@ interface Volunteer {
   email: string;
   bonusAmount: number;
   date: string;
+}
+
+interface Bonus {
+  id: string;
+  description: string;
+  discountPercentage: number;
+  startDate: string;
+  endDate: string;
 }
 
 interface Organization {
@@ -21,6 +31,13 @@ interface Organization {
   address?: string;
   about?: string;
   inn?: string;
+}
+
+interface BonusErrors {
+  description?: string;
+  discountPercentage?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 const mockOrganization: Organization = {
@@ -76,6 +93,8 @@ const navigationItems = [
   { name: 'Обзор', icon: SparklesIcon, href: '#overview' },
   { name: 'Профиль', icon: UserIcon, href: '#profile' },
   { name: 'История', icon: ClockIcon, href: '#history' },
+  { name: 'Бонусы', icon: GiftIcon, href: '#bonuses' },
+  { name: 'Отсканировать QR-код', icon: QrCodeIcon, href: '#scan' },
 ];
 
 const categories = ["Питание", "Здоровье", "Одежда"];
@@ -89,6 +108,19 @@ export default function OrganizationDashboard() {
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState<Organization>(mockOrganization);
   const [editErrors, setEditErrors] = useState<Partial<Organization>>({});
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bonuses, setBonuses] = useState<Bonus[]>([]);
+  const [newBonus, setNewBonus] = useState<Bonus>({
+    id: '',
+    description: '',
+    discountPercentage: 0,
+    startDate: '',
+    endDate: ''
+  });
+  const [bonusErrors, setBonusErrors] = useState<BonusErrors>({});
 
   const usedBonusesCount = volunteers.filter(v => v.bonusAmount > 0).length;
 
@@ -174,6 +206,95 @@ export default function OrganizationDashboard() {
     }
   };
 
+  const handleScanClick = () => {
+    setActiveTab('scan');
+    setIsScanModalOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (qrCode) {
+      setScanResult(qrCode.data);
+      console.log("QR-код (фронт):", qrCode.data);
+    } else {
+      setScanError("Не удалось распознать QR-код на изображении.");
+    }
+  };
+  img.src = URL.createObjectURL(file);
+};
+
+  const handleBonusSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors: BonusErrors = {};
+
+    if (!newBonus.description.trim()) {
+      newErrors.description = "Описание обязательно";
+    }
+
+    if (typeof newBonus.discountPercentage !== 'number' || newBonus.discountPercentage <= 0 || newBonus.discountPercentage > 100) {
+      newErrors.discountPercentage = "Процент скидки должен быть от 1 до 100";
+    }
+
+    if (!newBonus.startDate) {
+      newErrors.startDate = "Дата начала обязательна";
+    }
+
+    if (!newBonus.endDate) {
+      newErrors.endDate = "Дата окончания обязательна";
+    }
+
+    if (newBonus.startDate && newBonus.endDate && newBonus.startDate > newBonus.endDate) {
+      newErrors.endDate = "Дата окончания должна быть позже даты начала";
+    }
+
+    setBonusErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      const bonusWithId = {
+        ...newBonus,
+        id: Date.now().toString()
+      };
+      setBonuses([...bonuses, bonusWithId]);
+      setNewBonus({
+        id: '',
+        description: '',
+        discountPercentage: 0,
+        startDate: '',
+        endDate: ''
+      });
+      setIsBonusModalOpen(false);
+    }
+  };
+
+  const handleBonusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewBonus(prev => ({
+      ...prev,
+      [name]: name === 'discountPercentage' ? (parseInt(value) || 0) as number : value
+    }));
+    if (bonusErrors[name as keyof BonusErrors]) {
+      setBonusErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -196,7 +317,13 @@ export default function OrganizationDashboard() {
                   {navigationItems.map((item) => (
                     <li key={item.name}>
                       <button
-                        onClick={() => setActiveTab(item.name.toLowerCase())}
+                        onClick={() => {
+                          if (item.name === 'Отсканировать QR-код') {
+                            handleScanClick();
+                          } else {
+                            setActiveTab(item.name.toLowerCase());
+                          }
+                        }}
                         className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                           activeTab === item.name.toLowerCase()
                             ? 'bg-blue-50 text-blue-700'
@@ -447,6 +574,193 @@ export default function OrganizationDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'бонусы' && (
+  <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+      <h3 className="text-xl font-semibold text-gray-900">Управление бонусами</h3>
+      <button
+        onClick={() => setIsBonusModalOpen(true)}
+        className="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+      >
+        <GiftIcon className="h-5 w-5 mr-2" />
+        Создать бонус
+      </button>
+    </div>
+
+    <div className="p-6">
+      {bonuses.length === 0 ? (
+        <div className="text-center py-16 text-gray-500">
+          <GiftIcon className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+          <p className="text-lg font-medium">Нет активных бонусов</p>
+          <p className="text-sm mt-1">Создайте первый бонус для вашей организации</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {bonuses.map((bonus) => (
+            <div key={bonus.id} className="border border-gray-200 rounded-xl shadow hover:shadow-md transition p-5 bg-white">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-lg font-semibold text-gray-900">{bonus.description}</h4>
+                <span className="text-sm font-medium bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                  {bonus.discountPercentage}%
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 flex items-center">
+                <ClockIcon className="h-5 w-5 mr-2 text-gray-400" />
+                {formatDate(bonus.startDate)} – {formatDate(bonus.endDate)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+            {isBonusModalOpen && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 transform transition-all duration-300 ease-out">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-gray-900">Создание бонуса</h3>
+                      <button
+                        onClick={() => setIsBonusModalOpen(false)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleBonusSubmit} className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Описание *</label>
+                        <input
+                          type="text"
+                          name="description"
+                          value={newBonus.description}
+                          onChange={handleBonusChange}
+                          placeholder="Например: Скидка на обед"
+                          className={`w-full px-4 py-2.5 rounded-lg border ${
+                            bonusErrors.description ? 'border-red-400' : 'border-gray-200'
+                          } focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors`}
+                        />
+                        {bonusErrors.description && (
+                          <p className="mt-1.5 text-sm text-red-600">{bonusErrors.description}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Процент скидки *</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            name="discountPercentage"
+                            value={newBonus.discountPercentage}
+                            onChange={handleBonusChange}
+                            min="1"
+                            max="100"
+                            placeholder="10"
+                            className={`w-full px-4 py-2.5 rounded-lg border ${
+                              bonusErrors.discountPercentage ? 'border-red-400' : 'border-gray-200'
+                            } focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors`}
+                          />
+                          <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                            %
+                          </div>
+                        </div>
+                        {bonusErrors.discountPercentage && (
+                          <p className="mt-1.5 text-sm text-red-600">{bonusErrors.discountPercentage}</p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Дата начала *</label>
+                          <input
+                            type="date"
+                            name="startDate"
+                            value={newBonus.startDate}
+                            onChange={handleBonusChange}
+                            className={`w-full px-4 py-2.5 rounded-lg border ${
+                              bonusErrors.startDate ? 'border-red-400' : 'border-gray-200'
+                            } focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors`}
+                          />
+                          {bonusErrors.startDate && (
+                            <p className="mt-1.5 text-sm text-red-600">{bonusErrors.startDate}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Дата окончания *</label>
+                          <input
+                            type="date"
+                            name="endDate"
+                            value={newBonus.endDate}
+                            onChange={handleBonusChange}
+                            className={`w-full px-4 py-2.5 rounded-lg border ${
+                              bonusErrors.endDate ? 'border-red-400' : 'border-gray-200'
+                            } focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors`}
+                          />
+                          {bonusErrors.endDate && (
+                            <p className="mt-1.5 text-sm text-red-600">{bonusErrors.endDate}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsBonusModalOpen(false)}
+                          className="px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                        >
+                          Отмена
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                        >
+                          Создать
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'scan' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Сканирование QR-кода</h3>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <QrCodeIcon className="h-5 w-5 mr-2" />
+                    Выбрать изображение
+                  </button>
+                  
+                  {scanError && (
+                    <p className="mt-4 text-sm text-red-600">{scanError}</p>
+                  )}
+                  
+                  {scanResult && (
+                    <div className="mt-4 p-4 bg-green-50 rounded-md">
+                      <p className="text-sm text-green-800">{scanResult}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

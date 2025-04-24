@@ -77,6 +77,7 @@ export default function VerifyEmailPage() {
       // Сохраняем токен в localStorage
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('token_type', data.token_type);
+      localStorage.setItem('user_role', 'volunteer');
       
       // После успешной проверки перенаправляем на главную страницу
       router.push("/");
