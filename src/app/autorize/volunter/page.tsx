@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_ADRESS } from "@/lib/api/config";
 
 interface VolunteerLoginData {
   fullName: string;
@@ -51,10 +52,27 @@ export const VolunteerLoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        // Имитация запроса
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await fetch(`${API_ADRESS}/send-code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+          },
+          body: JSON.stringify({
+            full_name: formData.fullName,
+            email: formData.email
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка при отправке кода');
+        }
+
+        const data = await response.json();
         console.log("Вход волонтёра:", formData);
-        router.push("/register/verify");
+        router.push(`/register/verify?full_name=${encodeURIComponent(formData.fullName)}&email=${encodeURIComponent(formData.email)}`);
+      } catch (err) {
+        setErrors({ email: "Ошибка при отправке кода" });
       } finally {
         setIsLoading(false);
       }

@@ -64,7 +64,7 @@ function VolunteerCabinet() {
 
   const handleGenerateQR = async () => {
     try {
-      const qrData = 'https://github.com/dobrodon/front-dobrodon/';
+      const qrData = 'kyugiuyguy778t976ti76r5fi6r';
       router.push(`/qr-code?data=${encodeURIComponent(qrData)}`);
     } catch (error) {
       console.error('Error generating QR code:', error);
