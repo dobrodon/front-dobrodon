@@ -9,7 +9,7 @@ interface VolunteerLoginData {
   email: string;
 }
 
-export default function VolunteerLoginForm() {
+export const VolunteerLoginForm = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<VolunteerLoginData>({
     fullName: "",
@@ -85,6 +85,27 @@ export default function VolunteerLoginForm() {
         }
 
         if (!response.ok) {
+          if (response.status === 422 && data.detail) {
+            // Обработка ошибок валидации
+            const validationErrors = data.detail;
+            const fieldErrors: Partial<VolunteerLoginData> = {};
+            
+            validationErrors.forEach((error: any) => {
+              if (error.loc && error.loc[1]) {
+                const field = error.loc[1];
+                if (field === 'email') {
+                  fieldErrors.email = error.msg || "Неверный формат email";
+                } else if (field === 'full_name') {
+                  fieldErrors.fullName = error.msg || "Неверный формат ФИО";
+                }
+              }
+            });
+            
+            if (Object.keys(fieldErrors).length > 0) {
+              setErrors(fieldErrors);
+              return;
+            }
+          }
           throw new Error(data.message || `Ошибка сервера: ${response.status}`);
         }
 
@@ -102,11 +123,13 @@ export default function VolunteerLoginForm() {
         }, 1500);
       } catch (err) {
         console.error("Полная ошибка авторизации:", err);
-        setErrors({ 
-          email: err instanceof Error 
-            ? err.message 
-            : "Произошла неизвестная ошибка при отправке кода" 
-        });
+        if (!errors.email && !errors.fullName) {
+          setErrors({ 
+            email: err instanceof Error 
+              ? err.message 
+              : "Произошла неизвестная ошибка при отправке кода" 
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -193,4 +216,4 @@ export default function VolunteerLoginForm() {
       </div>
     </div>
   );
-}
+};

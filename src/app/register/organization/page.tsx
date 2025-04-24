@@ -15,6 +15,7 @@ interface OrganizationLoginData {
   description: string;
   submit?: string;
   category: string;
+  code: string;
 }
 
 const categories = ["Питание", "Здоровье", "Одежда"];
@@ -31,6 +32,7 @@ export const OrganizationLoginForm = () => {
     inn: "",
     description: "",
     category: "",
+    code: "test", // Default code for testing
   });
 
   const [errors, setErrors] = useState<Partial<OrganizationLoginData>>({});
@@ -118,45 +120,73 @@ export const OrganizationLoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
+        console.log('Sending registration request with data:', {
+          email: formData.email,
+          name: formData.name,
+          inn: formData.inn,
+          phone: formData.phone,
+          hashed_password: formData.password,
+          address: formData.address,
+          description: formData.description,
+          category: formData.category,
+          code: formData.code,
+        });
+
         const response = await fetch(`${API_ADRESS}/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'accept': 'application/json',
           },
           body: JSON.stringify({
-            name: formData.name,
             email: formData.email,
-            hashed_password: formData.password,
+            name: formData.name,
+            inn: formData.inn,
             phone: formData.phone,
+            hashed_password: formData.password,
             address: formData.address,
             description: formData.description,
-            inn: formData.inn,
             category: formData.category,
+            code: formData.code,
           }),
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Ошибка при регистрации');
+        console.log('Registration response status:', response.status);
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        let errorData;
+        try {
+          errorData = responseText ? JSON.parse(responseText) : {};
+        } catch (e) {
+          console.error('Failed to parse response as JSON:', e);
+          errorData = {};
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          console.error('Registration error response:', errorData);
+          const errorMessage = errorData.detail?.[0]?.msg || errorData.message || `Ошибка при регистрации (${response.status})`;
+          throw new Error(errorMessage);
+        }
+
+        const data = JSON.parse(responseText);
         console.log('Успешная регистрация:', data);
-        // Сохраняем роль в localStorage !!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // поменять местами с проверкой почты
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        
+        // Сохраняем токен и роль в localStorage
+        localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('userRole', 'organization');
-        router.push("/register/verify");
+        localStorage.setItem('userEmail', data.email);
+        
+        router.push("/");
       } catch (error) {
         console.error('Ошибка при регистрации:', error);
-        setErrors({ submit: error instanceof Error ? error.message : 'Произошла ошибка при регистрации' });
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          setErrors({ submit: 'Сервер недоступен. Пожалуйста, попробуйте позже.' });
+        } else if (error instanceof Error) {
+          setErrors({ submit: error.message });
+        } else {
+          setErrors({ submit: 'Произошла ошибка при регистрации. Проверьте подключение к серверу.' });
+        }
       } finally {
         setIsLoading(false);
       }
