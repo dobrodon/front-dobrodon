@@ -51,4 +51,31 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
+
+export interface Organization {
+  id: number;
+  name: string;
+  inn: string;
+  email: string;
+  phone: string;
+  address: string;
+  description: string;
+  category: string;
+}
+
+export async function fetchOrganizations(): Promise<string[]> {
+  try {
+    const response = await fetch(`${API_ADRESS}/organizations`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch organizations');
+    }
+
+    const organizations: Organization[] = await response.json();
+    return organizations.map(org => org.name);
+  } catch (error) {
+    console.error('Error fetching organizations:', error);
+    return [];
+  }
+}

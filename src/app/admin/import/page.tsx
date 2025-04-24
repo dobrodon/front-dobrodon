@@ -48,7 +48,7 @@ export default function ImportPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${API_ADRESS}/api/import`, {
+      const response = await fetch(`${API_ADRESS}/upload-csv`, {
         method: 'POST',
         body: formData,
       });

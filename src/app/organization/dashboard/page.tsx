@@ -122,6 +122,7 @@ export default function OrganizationDashboard() {
   const [editErrors, setEditErrors] = useState<Partial<Organization>>({});
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [scanResult, setScanResult] = useState<QRCodeData | null>(null);
+//  const [scanResult, setScanResult] = useState<string | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
@@ -339,6 +340,31 @@ export default function OrganizationDashboard() {
 
     img.src = URL.createObjectURL(file);
   };
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (qrCode) {
+      setScanResult(qrCode.data);
+      console.log("QR-код (фронт):", qrCode.data);
+    } else {
+      setScanError("Не удалось распознать QR-код на изображении.");
+    }
+  };
+  img.src = URL.createObjectURL(file);
+};
 
   const handleBonusSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -428,6 +454,11 @@ export default function OrganizationDashboard() {
                             ? 'bg-blue-50 text-blue-700'
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
+//                        onClick={() => setActiveTab(item.name.toLowerCase())}
+//                        className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${activeTab === item.name.toLowerCase()
+//                          ? 'bg-blue-50 text-blue-700'
+//                          : 'text-gray-700 hover:bg-gray-50'
+//                          }`}
                       >
                         <item.icon className="h-5 w-5 mr-3" />
                         {item.name}
@@ -867,6 +898,7 @@ export default function OrganizationDashboard() {
                         <p className="text-sm text-gray-600"><span className="font-medium">ID:</span> {scanResult.id}</p>
                         <p className="text-sm text-gray-600"><span className="font-medium">Сообщение:</span> {scanResult.message}</p>
                       </div>
+//                      <p className="text-sm text-green-800">{scanResult}</p>
                     </div>
                   )}
                 </div>

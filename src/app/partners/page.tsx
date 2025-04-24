@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { debounce } from 'lodash';
 import Image from "next/image";
 import Link from "next/link";
-import { SparklesIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { API_ADRESS } from '@/lib/api/config';
 
 interface Organization {
@@ -20,6 +20,7 @@ interface Organization {
 const categories = ["Все", "Питание", "Здоровье", "Одежда"];
 
 export default function PartnersPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +121,18 @@ export default function PartnersPage() {
                 Добродон
               </Link>
             </div>
+            <div className="flex items-center md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-700 hover:text-blue-600 focus:outline-none"
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" />
+                )}
+              </button>
+            </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
               {!isAuthorized && (
@@ -134,6 +147,22 @@ export default function PartnersPage() {
             </div>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white shadow-sm">
+            <div className="space-y-4 px-4 py-4">
+              <Link href="/" className="block text-gray-700 hover:text-blue-600">Главная</Link>
+              {!isAuthorized && (
+                <Link href="/register" className="block text-gray-700 hover:text-blue-600">Регистрация организации</Link>
+              )}
+              <Link 
+                href={isAuthorized ? "/cabinet" : "/autorize"} 
+                className="block text-gray-700 hover:text-blue-600"
+              >
+                {isAuthorized ? "Личный кабинет" : "Вход"}
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
