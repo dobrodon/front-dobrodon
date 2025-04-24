@@ -9,7 +9,7 @@ interface VolunteerLoginData {
   email: string;
 }
 
-export const VolunteerLoginForm = () => {
+export default function VolunteerLoginForm() {
   const router = useRouter();
   const [formData, setFormData] = useState<VolunteerLoginData>({
     fullName: "",
@@ -52,27 +52,61 @@ export const VolunteerLoginForm = () => {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
+        const requestBody = {
+          full_name: formData.fullName,
+          email: formData.email
+        };
+
+        console.log("Отправка запроса:", {
+          url: `${API_ADRESS}/send-code`,
+          method: 'POST',
+          body: requestBody
+        });
+
         const response = await fetch(`${API_ADRESS}/send-code`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'accept': 'application/json',
           },
-          body: JSON.stringify({
-            full_name: formData.fullName,
-            email: formData.email
-          }),
+          body: JSON.stringify(requestBody),
         });
 
-        if (!response.ok) {
-          throw new Error('Ошибка при отправке кода');
+        console.log("Статус ответа:", response.status);
+        console.log("Заголовки ответа:", Object.fromEntries(response.headers.entries()));
+
+        let data;
+        try {
+          data = await response.json();
+          console.log("Тело ответа:", data);
+        } catch (jsonError) {
+          console.error("Ошибка парсинга JSON:", jsonError);
+          throw new Error('Неверный формат ответа от сервера');
         }
 
-        const data = await response.json();
-        console.log("Вход волонтёра:", formData);
-        router.push(`/register/verify?full_name=${encodeURIComponent(formData.fullName)}&email=${encodeURIComponent(formData.email)}`);
+        if (!response.ok) {
+          throw new Error(data.message || `Ошибка сервера: ${response.status}`);
+        }
+
+        // Save email and role to localStorage
+        localStorage.setItem('volunteer_email', formData.email);
+        localStorage.setItem('userRole', 'volunteer');
+        
+        // Show success message from server
+        setErrors({});
+        setIsSuccess(true);
+        
+        // Redirect after a short delay to show success message
+        setTimeout(() => {
+          router.push(`/register/verify?full_name=${encodeURIComponent(formData.fullName)}&email=${encodeURIComponent(formData.email)}`);
+        }, 1500);
       } catch (err) {
-        setErrors({ email: "Ошибка при отправке кода" });
+        console.error("Полная ошибка авторизации:", err);
+        setErrors({ 
+          email: err instanceof Error 
+            ? err.message 
+            : "Произошла неизвестная ошибка при отправке кода" 
+        });
       } finally {
         setIsLoading(false);
       }
@@ -159,4 +193,4 @@ export const VolunteerLoginForm = () => {
       </div>
     </div>
   );
-};
+}
