@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SparklesIcon, UserIcon, GiftIcon, UsersIcon, ClockIcon, Cog6ToothIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import { API_ADRESS } from '@/lib/api/config';
 import jsQR from 'jsqr';  
+import axios from 'axios';
 
 interface Volunteer {
   id: string;
@@ -36,6 +37,15 @@ interface BonusErrors {
   discountPercentage?: string;
   startDate?: string;
   endDate?: string;
+}
+
+interface QRCodeData {
+  hash_value: string;
+  created_at: string;
+  created_by: string;
+  rating: number;
+  message: string;
+  id: number;
 }
 
 const mockOrganization: Organization = {
@@ -91,9 +101,17 @@ const navigationItems = [
 
 const categories = ["Питание", "Здоровье", "Одежда"];
 
-export default function OrganizationDashboard() {
+const fetchQrHashData = async (): Promise<QRCodeData[]> => {
+  try {
+    const response = await axios.post(`${API_ADRESS}/check-qr-hash`, {}); // Замените {} на данные для запроса
+    return response.data as QRCodeData[];
+  } catch (error) {
+    console.error('Ошибка при выполнении запроса:', error);
+    return [];
+  }
+};
 
-  
+export default function OrganizationDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('обзор');
   const [isBonusModalOpen, setIsBonusModalOpen] = useState(false);
@@ -103,7 +121,7 @@ export default function OrganizationDashboard() {
   const [editFormData, setEditFormData] = useState<Organization>(mockOrganization);
   const [editErrors, setEditErrors] = useState<Partial<Organization>>({});
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
-  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [scanResult, setScanResult] = useState<QRCodeData | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
@@ -115,6 +133,8 @@ export default function OrganizationDashboard() {
     endDate: ''
   });
   const [bonusErrors, setBonusErrors] = useState<BonusErrors>({});
+  const [qrData, setQrData] = useState<QRCodeData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const usedBonusesCount = volunteers.filter(v => v.id !== "").length;
 
@@ -125,6 +145,15 @@ export default function OrganizationDashboard() {
     }
   }, [router]);
 
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchQrHashData();
+      setQrData(data);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -217,31 +246,99 @@ export default function OrganizationDashboard() {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    // Reset previous results
+    setScanResult(null);
+    setScanError(null);
 
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-
-    if (qrCode) {
-      setScanResult(qrCode.data);
-      console.log("QR-код (фронт):", qrCode.data);
-    } else {
-      setScanError("Не удалось распознать QR-код на изображении.");
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setScanError("Пожалуйста, выберите файл изображения");
+      return;
     }
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setScanError("Не удалось создать контекст для обработки изображения");
+        return;
+      }
+
+      // Set canvas size to match image
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Draw image to canvas
+      ctx.drawImage(img, 0, 0);
+
+      try {
+        // Get image data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Try to decode QR code with different options
+        const qrCode = jsQR(
+          imageData.data,
+          imageData.width,
+          imageData.height,
+          {
+            inversionAttempts: "attemptBoth"
+          }
+        );
+
+        if (qrCode) {
+          console.log("Raw QR code data:", qrCode.data);
+          try {
+            // Parse QR code data
+            const qrData = JSON.parse(qrCode.data) as QRCodeData;
+            
+            // Validate required fields
+            if (!qrData.hash_value || !qrData.created_at || !qrData.created_by) {
+              throw new Error("Неверный формат данных QR-кода");
+            }
+
+            // Format the date for display
+            const formattedDate = new Date(qrData.created_at).toLocaleString('ru-RU', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+
+            setScanResult({
+              ...qrData,
+              created_at: formattedDate
+            });
+            setScanError(null);
+            console.log("QR-код успешно распознан:", qrData);
+          } catch (error) {
+            console.error("Ошибка при парсинге QR-кода:", error);
+            console.error("Сырые данные QR-кода:", qrCode.data);
+            setScanError("Неверный формат данных в QR-коде. Проверьте, что QR-код содержит правильные данные.");
+          }
+        } else {
+          console.log("Не удалось распознать QR-код. Размер изображения:", canvas.width, "x", canvas.height);
+          setScanError("Не удалось распознать QR-код на изображении. Убедитесь, что:\n" +
+            "1. Изображение четкое и хорошо освещено\n" +
+            "2. QR-код занимает значительную часть изображения\n" +
+            "3. QR-код не поврежден и не искажен");
+        }
+      } catch (error) {
+        console.error("Ошибка при обработке изображения:", error);
+        setScanError("Ошибка при обработке изображения. Попробуйте другое изображение.");
+      }
+    };
+
+    img.onerror = () => {
+      setScanError("Ошибка при загрузке изображения");
+    };
+
+    img.src = URL.createObjectURL(file);
   };
-  img.src = URL.createObjectURL(file);
-};
 
   const handleBonusSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -331,11 +428,6 @@ export default function OrganizationDashboard() {
                             ? 'bg-blue-50 text-blue-700'
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
-//                        onClick={() => setActiveTab(item.name.toLowerCase())}
-//                        className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${activeTab === item.name.toLowerCase()
-//                          ? 'bg-blue-50 text-blue-700'
-//                          : 'text-gray-700 hover:bg-gray-50'
-//                          }`}
                       >
                         <item.icon className="h-5 w-5 mr-3" />
                         {item.name}
@@ -766,7 +858,15 @@ export default function OrganizationDashboard() {
                   
                   {scanResult && (
                     <div className="mt-4 p-4 bg-green-50 rounded-md">
-                      <p className="text-sm text-green-800">{scanResult}</p>
+                      <h4 className="text-lg font-medium text-green-800 mb-2">Информация из QR-кода:</h4>
+                      <div className="space-y-2 text-left">
+                        <p className="text-sm text-gray-600"><span className="font-medium">Хеш:</span> {scanResult.hash_value}</p>
+                        <p className="text-sm text-gray-600"><span className="font-medium">Создан:</span> {scanResult.created_at}</p>
+                        <p className="text-sm text-gray-600"><span className="font-medium">Создатель:</span> {scanResult.created_by}</p>
+                        <p className="text-sm text-gray-600"><span className="font-medium">Рейтинг:</span> {scanResult.rating}</p>
+                        <p className="text-sm text-gray-600"><span className="font-medium">ID:</span> {scanResult.id}</p>
+                        <p className="text-sm text-gray-600"><span className="font-medium">Сообщение:</span> {scanResult.message}</p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -775,6 +875,9 @@ export default function OrganizationDashboard() {
           </main>
         </div>
       </div>
+
+      
+      
     </div>
   );
 }
