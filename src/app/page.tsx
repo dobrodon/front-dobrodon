@@ -98,8 +98,8 @@ export default function Home() {
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-4">Социальные сети</h3>
               <ul className="space-y-2">
-                <li><Link href="#" className="hover:text-blue-400">ВКонтакте</Link></li>
-                <li><Link href="#" className="hover:text-blue-400">Телеграм</Link></li>
+                <li><Link href="https://vk.com/y.vasilchenko" className="hover:text-blue-400">ВКонтакте</Link></li>
+                <li><Link href="https://t.me/aip_fikita" className="hover:text-blue-400">Телеграм</Link></li>
               </ul>
             </div>
           </div>
